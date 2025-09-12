@@ -35,10 +35,9 @@
     .speech .txt{ line-height:1.6; font-size:.9rem; font-variant-ligatures:none; font-feature-settings:"liga" 0, "kern" 0; font-kerning:none; -webkit-font-smoothing:antialiased; text-rendering:geometricPrecision }
     .speech .txt.typing{ font-family: ui-monospace, Menlo, Monaco, Consolas, monospace; letter-spacing:0 }
     .speech .who{ display:block; color:#7c6b55; font-size:.75rem; margin-bottom:.25rem }
-    /* reserve space for inline chibi on the left inside the box */
     .speech.has-chibi-left{ padding-left: calc(var(--chibi-size) + 22px); }
 
-    /* CHIBI overlay (we position it via JS). Hidden by default. */
+    /* CHIBI overlay */
     #chibiHead{ position:fixed; width:var(--chibi-size); height:var(--chibi-size); z-index:60; pointer-events:none; filter:drop-shadow(0 10px 16px rgba(0,0,0,.25)); animation:bob 2.1s ease-in-out infinite; display:none }
     #chibiHead img{ width:100%; height:auto; display:block; image-rendering:pixelated }
     #chibiHead.wave img{ animation:wave 900ms ease-in-out 1 }
@@ -52,7 +51,7 @@
     body::before{ content:""; position:fixed; inset:0; background-size:32px 32px; background-image: linear-gradient(to right, rgba(0,0,0,.15) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,.15) 1px, transparent 1px); pointer-events:none; z-index:0 }
 
     /* itinerary readable system font */
-    main, .entry, .widget, .tabs button, .day h3, .meta, .result, textarea, small{ font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; letter-spacing:0; line-height:1.45 }
+    main, .entry, .widget, .tabs button, .day h3, .meta, .result, textarea, small, input{ font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; letter-spacing:0; line-height:1.45 }
 
     main{ position:relative; padding: 0 1rem 2.4rem; max-width:1000px; margin:0 auto; z-index:1 }
     .tabs{ display:flex; gap:.5rem; flex-wrap:wrap; margin:1rem 0; justify-content:center }
@@ -75,12 +74,6 @@
     /* hype scene */
     #scene2{ background:url('yorknew1.png') center/cover no-repeat }
     #scene2 .modal{ background:rgba(255,255,255,0.85) }
-
-    /* export pill */
-    #exportJSON{ position:fixed; right:12px; bottom:12px; z-index:31; background:#ffffffcc; border:2px solid #e8dcc6; border-radius:999px; padding:.4rem .6rem; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; font-size:.72rem; text-decoration:none; color:#174260; box-shadow:0 8px 18px rgba(0,0,0,.15) }
-    #exportJSON:hover{ background:#fff }
-
-    @media (max-width: 600px){ :root{ --chibi-size:72px } }
   </style>
 </head>
 <body>
@@ -89,6 +82,7 @@
     <p class="sub">trip starts in <span id="countdown">—</span></p>
   </header>
 
+  <!-- Scene 1: Start -->
   <section id="scene1" class="scene active">
     <div class="modal">
       <h2>hello bb! 🎉</h2>
@@ -100,6 +94,15 @@
     </div>
   </section>
 
+  <!-- Scene 1.5: Sassy "girl bffr" loop -->
+  <section id="sceneSassy" class="scene">
+    <div class="modal">
+      <h2>girl bffr 😭</h2>
+      <p style="font-size:.8rem;color:#5b4630">(click anywhere)</p>
+    </div>
+  </section>
+
+  <!-- Scene 2: Hype -->
   <section id="scene2" class="scene">
     <div class="modal">
       <h2 style="font-size:clamp(1.6rem,5vw,2.6rem); margin:.2rem 0 .4rem">YORKNEW CITY RAHHHHH🗽💥</h2>
@@ -107,6 +110,31 @@
     </div>
   </section>
 
+  <!-- Scene 2.5: Love Quiz -->
+  <section id="sceneQuiz" class="scene">
+    <div class="modal">
+      <h2>but first, an important question…</h2>
+      <p style="margin:.4rem 0 1rem">who do i love?</p>
+      <div style="display:flex; gap:.5rem; justify-content:center; flex-wrap:wrap">
+        <input id="quizInput" type="text" placeholder="type your answer" style="font-size:14px;padding:.6rem .8rem;border:2px dashed #ead9ba;border-radius:10px;min-width:220px" />
+        <button id="quizBtn" class="btn">Submit</button>
+      </div>
+      <div id="quizErr" style="color:#b00020; margin-top:.6rem; min-height:1.2rem; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial"></div>
+    </div>
+  </section>
+
+  <!-- Scene 2.6: Love Message -->
+  <section id="sceneLove" class="scene">
+    <div class="modal">
+      <h2>Yes, you! 💖</h2>
+      <p style="max-width:640px;margin:0 auto 0.6rem; line-height:1.5; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial">
+        I love Bryant Giang. I am so happy to have the opportunity to celebrate your birthday and that you chose to spend it with me. I hope you enjoy the rest of your gift and can’t wait to celebrate many more with you, my lovely Bryant :3
+      </p>
+      <p style="font-size:.8rem;color:#5b4630">(click anywhere to continue)</p>
+    </div>
+  </section>
+
+  <!-- Narrator dialog -->
   <div id="narrator" class="narrator-layer">
     <div id="speech" class="speech">
       <div class="txt"><span class="who">your girlfriend</span><div id="speechTxt">Loading…</div></div>
@@ -190,6 +218,10 @@
 
     const countdownEl = $('#countdown');
     const scene1=$('#scene1'), scene2=$('#scene2');
+    const sceneSassy=$('#sceneSassy');
+    const sceneQuiz=$('#sceneQuiz');
+    const sceneLove=$('#sceneLove');
+
     const bdCount=$('#bd-count');
     const btnWhat=$('#btn-what'), btnKnow=$('#btn-know');
     const narrator=$('#narrator');
@@ -207,6 +239,10 @@
     const noteArea=$('#noteArea'), saveNote=$('#saveNote'), noteSaved=$('#noteSaved');
     const exportJSON=$('#exportJSON');
 
+    const quizInput=$('#quizInput');
+    const quizBtn=$('#quizBtn');
+    const quizErr=$('#quizErr');
+
     /* ===== Countdown ===== */
     function fmtTwo(n){return String(n).padStart(2,'0')}
     function humanCountdown(to){ const now=new Date(); const t=new Date(to); let ms=t-now; if(ms<0) ms=0; const d=Math.floor(ms/86400000); ms%=86400000; const h=Math.floor(ms/3600000); ms%=3600000; const m=Math.floor(ms/60000); ms%=60000; const s=Math.floor(ms/1000); return `${d}d ${fmtTwo(h)}h:${fmtTwo(m)}m:${fmtTwo(s)}s`; }
@@ -222,11 +258,37 @@
     ];
     let li = -1; let isTyping = false; let storyDone = false;
 
-    function showScene2(){ scene1.classList.remove('active'); scene2.classList.add('active'); confetti(160) }
-    function exitScene2(e){ if(e) e.stopPropagation(); scene2.classList.remove('active'); setTimeout(startNarration,0) }
-    btnWhat.addEventListener('click', showScene2);
-    btnKnow.addEventListener('click', showScene2);
-    scene2.addEventListener('click', exitScene2);
+    // Button 1 -> Sassy scene -> click anywhere returns to start
+    btnWhat.addEventListener('click', ()=>{ scene1.classList.remove('active'); sceneSassy.classList.add('active'); });
+    sceneSassy.addEventListener('click', ()=>{ sceneSassy.classList.remove('active'); scene1.classList.add('active'); });
+
+    // Button 2 -> Hype scene
+    btnKnow.addEventListener('click', ()=>{ scene1.classList.remove('active'); scene2.classList.add('active'); confetti(160); });
+
+    // After hype -> Quiz
+    scene2.addEventListener('click', ()=>{ scene2.classList.remove('active'); sceneQuiz.classList.add('active'); setTimeout(()=>quizInput.focus(), 50); });
+
+    // Quiz handling
+    function norm(s){ return (s||'').toLowerCase().trim(); }
+    function isCorrect(ans){
+      const a = norm(ans);
+      return a === 'me' || a === 'bryant' || a === 'bryant giang' || a === 'anh' || /\bbryant\b/.test(a) || /\bme\b/.test(a) || /\banh\b/.test(a);
+    }
+    function submitQuiz(){
+      const v = quizInput.value;
+      if(isCorrect(v)){
+        quizErr.textContent='';
+        sceneQuiz.classList.remove('active');
+        sceneLove.classList.add('active');
+      }else{
+        quizErr.textContent = 'mm nope… try again 🙂';
+      }
+    }
+    quizBtn.addEventListener('click', submitQuiz);
+    quizInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); submitQuiz(); }});
+
+    // After love message -> start narration
+    sceneLove.addEventListener('click', ()=>{ sceneLove.classList.remove('active'); startNarration(); });
 
     async function startNarration(){
       try{
@@ -296,9 +358,8 @@
     /* ===== Self-tests ===== */
     (function selfTests(){
       try{
-        console.assert(typeof anchorChibiInlineLeft === 'function','anchorChibiInlineLeft exists');
-        console.assert(typeof dockChibiPeekUnderItin === 'function','dockChibiPeekUnderItin exists');
         console.assert(document.getElementById('bd-count'), '#bd-count exists');
+        console.assert(typeof exportJSON.href !== 'undefined', 'export link present');
       }catch(e){ console.error('[self-tests] failed', e); }
     })();
   </script>
