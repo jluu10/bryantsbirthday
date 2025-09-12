@@ -10,7 +10,7 @@
       --sky:#aee3ff; --sky-2:#86d7ff; --sand:#f5e9d2;
       --ink:#111827; --muted:#6b7280; --card:#fffdf8; --accent:#4aa3ff; --accent-2:#ffbf7f;
       --ring:rgba(74,163,255,.45); --shadow:rgba(0,0,0,.12);
-      --chibi-size:84px;
+      --chibi-size:84px; /* tweak 72–100px as you like */
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -28,43 +28,34 @@
     .btn.secondary{ background:#ffe7c9; color:#50381d; box-shadow:0 6px 0 #d7b38a }
     .btn:focus{ outline:2px solid var(--ring); outline-offset:2px }
 
-    /* narrator */
+    /* narrator center (no transform to avoid Chrome glyph jitter) */
     .narrator-layer{ position:fixed; inset:0; z-index:28; display:none }
-    .narrator-layer.show{ display:block }
-    .speech{ position:relative; margin:0 auto; background:var(--card); border:4px solid #e8dcc6; border-radius:12px; padding:1.5rem 1.1rem 1rem; width:min(780px,92vw); box-shadow:0 20px 60px var(--shadow); text-align:left; }
-    .speech .txt{ line-height:1.6; font-size:.8rem }
-    .speech .who{ display:block; color:#7c6b55; font-size:.7rem; margin-bottom:.25rem }
+    .narrator-layer.show{ display:grid; place-items:center }
+    .speech{ position:relative; margin:0 auto; background:var(--card); border:4px solid #e8dcc6; border-radius:12px; padding:1.25rem 1.1rem 1rem; width:min(780px,92vw); box-shadow:0 20px 60px var(--shadow); text-align:left }
+    .speech .txt{ line-height:1.6; font-size:.9rem; font-variant-ligatures:none; font-feature-settings:"liga" 0, "kern" 0; font-kerning:none; -webkit-font-smoothing:antialiased; text-rendering:geometricPrecision }
+    .speech .txt.typing{ font-family: ui-monospace, Menlo, Monaco, Consolas, monospace; letter-spacing:0 }
+    .speech .who{ display:block; color:#7c6b55; font-size:.75rem; margin-bottom:.25rem }
 
-    /* chibi ABOVE dialog box */
-    .chibi-head{
-      --size:var(--chibi-size);
-      position:fixed; 
-      left:50%; 
-      top: calc(50% - var(--chibi-size) - 140px); /* hover above speech */
-      transform:translateX(-50%);
-      width:var(--size); height:var(--size);
-      user-select:none; touch-action:none;
-      filter: drop-shadow(0 10px 16px rgba(0,0,0,.25));
-      animation:bob 2.1s ease-in-out infinite;
-      z-index:50; /* on top of everything */
-    }
-    .chibi-head img{ width:100%; height:auto; display:block; object-fit:contain; image-rendering:pixelated; }
-    .chibi-head.wave img{ animation:wave 900ms ease-in-out 1; }
-
-    @keyframes bob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-6px)}}
-    @keyframes wave{0%{ rotate:0 }25%{ rotate:-6deg }60%{ rotate:4deg }100%{ rotate:0 }}
+    /* CHIBI OVERLAY (top-most layer) */
+    #chibiHead{ position:fixed; width:var(--chibi-size); height:var(--chibi-size); z-index:60; pointer-events:none; filter:drop-shadow(0 10px 16px rgba(0,0,0,.25)); animation:bob 2.1s ease-in-out infinite; display:none }
+    #chibiHead img{ width:100%; height:auto; display:block; image-rendering:pixelated; }
+    #chibiHead.wave img{ animation:wave 900ms ease-in-out 1 }
+    @keyframes bob{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-6px) } }
+    @keyframes wave{ 0%{ rotate:0 } 25%{ rotate:-6deg } 60%{ rotate:4deg } 100%{ rotate:0 } }
 
     #tapHint{ position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.72); color:#fff; padding:.55rem .9rem; border-radius:10px; font-size:.7rem; z-index:29; display:none }
     #tapHint.show{ display:block }
 
-    /* retro grid background for app */
-    body::before{ content:""; position:fixed; inset:0; background-size:32px 32px; background-image: linear-gradient(to right, rgba(0,0,0,.15) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,.15) 1px, transparent 1px); pointer-events:none; z-index:0; }
-    main{ position:relative; padding: 0 1rem 2.4rem; max-width:1000px; margin:0 auto; z-index:1 }
+    /* retro grid */
+    body::before{ content:""; position:fixed; inset:0; background-size:32px 32px; background-image: linear-gradient(to right, rgba(0,0,0,.15) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,.15) 1px, transparent 1px); pointer-events:none; z-index:0 }
 
+    /* itinerary readable system font */
+    main, .entry, .widget, .tabs button, .day h3, .meta, .result, textarea, small{ font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; letter-spacing:0; line-height:1.45 }
+
+    main{ position:relative; padding: 0 1rem 2.4rem; max-width:1000px; margin:0 auto; z-index:1 }
     .tabs{ display:flex; gap:.5rem; flex-wrap:wrap; margin:1rem 0; justify-content:center }
     .tabs button{ background:#e9f6ff; color:#174260; border:none; padding:.6rem .8rem; border-radius:10px; cursor:pointer; box-shadow:0 4px 0 #badcf4 }
     .tabs button[aria-selected="true"]{ background:#ffe7c9; color:#50381d; box-shadow:0 4px 0 #d7b38a }
-
     .card{ background:var(--card); border-radius:12px; border:4px solid #e8dcc6; box-shadow:0 12px 24px var(--shadow) }
     .day{ margin:1rem 0; padding:.9rem }
     .entry{ display:grid; grid-template-columns:1fr auto; gap:.6rem; border:1px dashed #ead9ba; border-radius:10px; padding:.7rem; margin:.6rem 0 }
@@ -76,11 +67,18 @@
     @media(min-width:720px){ .widgets{ grid-template-columns:repeat(3,1fr) } }
 
     footer .bar{ display:flex; justify-content:flex-end; align-items:center; gap:1rem; padding:0 1rem 2rem; max-width:1000px; margin:0 auto }
+
     #confetti{ position:fixed; inset:0; pointer-events:none; z-index:10 }
 
-    /* Yorknew City BG for hype scene */
-    #scene2{ background:url('yorknew1.png') center/cover no-repeat; }
-    #scene2 .modal{ background:rgba(255,255,255,0.85); }
+    /* hype scene */
+    #scene2{ background:url('yorknew1.png') center/cover no-repeat }
+    #scene2 .modal{ background:rgba(255,255,255,0.85) }
+
+    /* export pill */
+    #exportJSON{ position:fixed; right:12px; bottom:12px; z-index:31; background:#ffffffcc; border:2px solid #e8dcc6; border-radius:999px; padding:.4rem .6rem; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; font-size:.72rem; text-decoration:none; color:#174260; box-shadow:0 8px 18px rgba(0,0,0,.15) }
+    #exportJSON:hover{ background:#fff }
+
+    @media (max-width: 600px){ :root{ --chibi-size:72px } }
   </style>
 </head>
 <body>
@@ -113,8 +111,8 @@
     </div>
   </div>
 
-  <!-- Chibi floating above speech -->
-  <div class="chibi-head" id="chibiHead" tabindex="0" aria-label="Chibi">
+  <!-- chibi overlay (anchored via JS over the speech box) -->
+  <div id="chibiHead" aria-hidden="true">
     <img id="chibiImg" src="gfchibi.png" alt="Chibi" />
   </div>
 
@@ -154,52 +152,157 @@
   <canvas id="confetti" aria-hidden="true"></canvas>
 
   <script>
-    const trip={ startDate:"2025-10-02", birthday:"2025-10-03", days:[
-      {label:"Day 1 · Thu", date:"2025-10-02", items:[{time:"Afternoon", title:"Check-in & Coffee"}]},
-      {label:"Day 2 · Fri · 🎂 Birthday", date:"2025-10-03", items:[{time:"Dinner", title:"Omakase → Pizza & Vinyl"}]},
-    ], vinylChoices:["Kind of Blue","Abbey Road"], treats:["Joe’s slice 🍕","Levain cookie 🍪"] };
+    /* ===== Trip Data ===== */
+    const trip = {
+      startDate: "2025-10-02",
+      birthday:  "2025-10-03",
+      days: [
+        { label: "Day 1 · Thu", date: "2025-10-02", items:[
+          { time:"Afternoon", title:"Check-in & Coffee", desc:"Drop bags, stroll to a cozy café near the hotel.", link:"https://maps.apple.com/", notes:"Option: Canal St Market bites."},
+          { time:"Evening", title:"Warm-up jazz set (soft option)", desc:"Live jazz vibes; keep it flexible if travel tired.", link:"#" }
+        ]},
+        { label: "Day 2 · Fri · 🎂 Birthday", date: "2025-10-03", items:[
+          { time:"Morning", title:"Slow morning walk", desc:"Stroll a park or waterfront boardwalk.", link:"#" },
+          { time:"Dinner", title:"Omakase → Pizza & Vinyl", desc:"Chef’s counter; after, a slice and pick a vinyl at a lounge.", link:"#", notes:"Bring ID for vinyl bar."},
+          { time:"Late", title:"Rooftop Nightcap", desc:"City lights & photos.", link:"#" }
+        ]},
+        { label: "Day 3 · Sat", date: "2025-10-04", items:[
+          { time:"Daytime", title:"Neighborhood Stroll & Thrift Pop-up", desc:"Williamsburg or LES walk; vintage browse.", link:"#" },
+          { time:"Evening", title:"Showtime", desc:"Pick a concert/comedy based on mood.", link:"#" }
+        ]},
+        { label: "Day 4 · Sun", date: "2025-10-05", items:[
+          { time:"Morning", title:"Museum or Gallery Hop", desc:"Choose 1–2 spots and keep it light.", link:"#" },
+          { time:"Evening", title:"Sunset Walk & Dessert", desc:"Pier photos + sweet treat.", link:"#" }
+        ]},
+        { label: "Day 5 · Mon", date: "2025-10-06", items:[
+          { time:"Morning", title:"Bonus Day", desc:"One more NYC stroll, coffee & park.", link:"#" },
+          { time:"Afternoon", title:"Last bites & souvenirs", desc:"Pick up gifts and head to airport.", link:"#" }
+        ]}
+      ],
+      vinylChoices: ["Kind of Blue","Abbey Road","Blonde","Random vinyl","Blue Train","Frank at the Sands"],
+      treats: ["Joe’s slice 🍕","Levain cookie 🍪","Soft-serve 🍦","Arthur Avenue cannoli 🥐"]
+    };
 
-    const $=(q,root=document)=>root.querySelector(q);
-    const countdownEl=$('#countdown'); const bdCount=$('#bd-count');
+    /* ===== Helpers & Refs ===== */
+    const $ = (q,root=document)=>root.querySelector(q);
+
+    const countdownEl = $('#countdown');
     const scene1=$('#scene1'), scene2=$('#scene2');
+    const bdCount=$('#bd-count');
     const btnWhat=$('#btn-what'), btnKnow=$('#btn-know');
-    const narrator=$('#narrator'); const speechTxt=$('#speechTxt'); const tapHint=$('#tapHint');
-    const app=$('#app'); const dayTabs=$('#dayTabs'); const daysWrap=$('#days');
-    const vinylBtn=$('#vinylBtn'), vinylResult=$('#vinylResult'); const treatBtn=$('#treatBtn'), treatResult=$('#treatResult');
-    const noteArea=$('#noteArea'), saveNote=$('#saveNote'), noteSaved=$('#noteSaved'); const exportJSON=$('#exportJSON');
+    const narrator=$('#narrator');
+    const speech=$('#speech');
+    const speechTxt=$('#speechTxt');
+    const chibiHead=$('#chibiHead');
+    const tapHint=$('#tapHint');
 
+    const app=$('#app');
+    const dayTabs=$('#dayTabs');
+    const daysWrap=$('#days');
+
+    const vinylBtn=$('#vinylBtn'), vinylResult=$('#vinylResult');
+    const treatBtn=$('#treatBtn'), treatResult=$('#treatResult');
+    const noteArea=$('#noteArea'), saveNote=$('#saveNote'), noteSaved=$('#noteSaved');
+    const exportJSON=$('#exportJSON');
+
+    /* ===== Countdown ===== */
     function fmtTwo(n){return String(n).padStart(2,'0')}
     function humanCountdown(to){ const now=new Date(); const t=new Date(to); let ms=t-now; if(ms<0) ms=0; const d=Math.floor(ms/86400000); ms%=86400000; const h=Math.floor(ms/3600000); ms%=3600000; const m=Math.floor(ms/60000); ms%=60000; const s=Math.floor(ms/1000); return `${d}d ${fmtTwo(h)}h:${fmtTwo(m)}m:${fmtTwo(s)}s`; }
     function daysUntil(start){ const t=new Date(start+"T00:00:00"); const now=new Date(); const d=Math.ceil((t-now)/86400000); return d>=0?`${d} day${d===1?'':'s'}`:`${Math.abs(d)} day${Math.abs(d)===1?'':'s'} ago`; }
-    function tickCountdown(){ countdownEl.textContent=daysUntil(trip.startDate); bdCount.textContent=humanCountdown(`${trip.birthday}T00:00:00`); }
+    function tickCountdown(){ countdownEl.textContent = daysUntil(trip.startDate); bdCount.textContent = humanCountdown(`${trip.birthday}T00:00:00`); }
     tickCountdown(); setInterval(tickCountdown,1000);
 
-    const lines=[
+    /* ===== Story flow (anti-jumble) ===== */
+    const lines = [
       "…what will we be doing in NYC, you may ask?",
       "Well, I coded a tiny retro adventure to reveal our plan.",
       "Follow me! We'll open the itinerary together."
     ];
-    let li=-1; let isTyping=false;
+    let li = -1; let isTyping = false; let storyDone = false;
 
-    function showScene2(){ scene1.classList.remove('active'); scene2.classList.add('active'); confetti(160); }
-    function exitScene2(e){ if(e) e.stopPropagation(); scene2.classList.remove('active'); setTimeout(startNarration,0); }
-    btnWhat.addEventListener('click',showScene2);
-    btnKnow.addEventListener('click',showScene2);
-    scene2.addEventListener('click',exitScene2);
+    function showScene2(){ scene1.classList.remove('active'); scene2.classList.add('active'); confetti(160) }
+    function exitScene2(e){ if(e) e.stopPropagation(); scene2.classList.remove('active'); setTimeout(startNarration,0) }
+    btnWhat.addEventListener('click', showScene2);
+    btnKnow.addEventListener('click', showScene2);
+    scene2.addEventListener('click', exitScene2);
 
-    async function startNarration(){ try{ if(document.fonts&&document.fonts.ready) await document.fonts.ready; }catch{} narrator.classList.add('show'); say(lines[++li]); }
+    async function startNarration() {
+      try {
+        if (document.fonts && document.fonts.ready) await document.fonts.ready;
+        narrator.classList.add('show');
+        anchorChibi();
+        chibiHead.style.display = 'block';
+        say(lines[++li]);
+      } catch (error) {
+        console.error(error);
+      }
+    }
 
-    function typeText(el,text,cb){ if(isTyping) return; isTyping=true; el.classList.add('typing'); el.textContent=''; let i=0; const step=()=>{ el.textContent+=(text[i++]||''); if(i<=text.length){ requestAnimationFrame(step); } else { el.classList.remove('typing'); isTyping=false; cb&&cb(); } }; requestAnimationFrame(step); }
-    function say(text){ typeText(speechTxt,text,()=>tapHint.classList.add('show')); }
+    function typeText(el, text, cb){ if(isTyping) return; isTyping=true; el.classList.add('typing'); el.textContent=''; let i=0; const step=()=>{ el.textContent += (text[i++]||''); if(i<=text.length){ requestAnimationFrame(step) } else { el.classList.remove('typing'); isTyping=false; cb&&cb() } }; requestAnimationFrame(step) }
+    function say(text){ typeText(speechTxt, text, ()=>{ tapHint.classList.add('show'); chibiHead.classList.add('wave'); setTimeout(()=>chibiHead.classList.remove('wave'), 900) }) }
 
-    document.addEventListener('click',()=>{ if(!narrator.classList.contains('show')) return; if(isTyping) return; tapHint.classList.remove('show'); li++; if(li<lines.length){ say(lines[li]); } else { narrator.classList.remove('show'); openApp(); } });
+    // global click to advance
+    document.addEventListener('click', ()=>{ if(!narrator.classList.contains('show')) return; if(isTyping) return; tapHint.classList.remove('show'); li++; if(li<lines.length){ say(lines[li]) } else { narrator.classList.remove('show'); openApp() } })
 
-    function openApp(){ app.hidden=false; renderDays(); confetti(120); }
+    // anchor chibi over the speech box
+    function anchorChibi(){
+      const r = speech.getBoundingClientRect();
+      const size = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chibi-size')) || 84;
+      const left = r.left + r.width/2 - size/2;   // center above dialog
+      const top  = r.top - size + 12;             // hover just above
+      chibiHead.style.left = Math.max(8, left) + 'px';
+      chibiHead.style.top  = Math.max(8, top)  + 'px';
+    }
 
-    function renderDays(){ dayTabs.innerHTML=''; trip.days.forEach((d,i)=>{ const b=document.createElement('button'); b.textContent=d.label; b.setAttribute('role','tab'); b.setAttribute('aria-selected',i===0?'true':'false'); b.addEventListener('click',()=>{ document.querySelectorAll('.tabs button').forEach(el=>el.setAttribute('aria-selected','false')); b.setAttribute('aria-selected','true'); renderDay(i); }); dayTabs.appendChild(b); }); renderDay(0); }
-    function renderDay(i){ const d=trip.days[i]; const wrap=document.createElement('section'); wrap.className='card day'; wrap.innerHTML=`<h3>${d.label} ${d.date}</h3>`; d.items.forEach(it=>{ wrap.innerHTML+=`<p><strong>${it.time}</strong> — ${it.title}</p>`; }); daysWrap.innerHTML=''; daysWrap.appendChild(wrap); }
+    // dock chibi peeking from the left of the itinerary once story is done
+    function dockChibi(){
+      const container = app; // main itinerary container
+      const r = container.getBoundingClientRect();
+      const size = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chibi-size')) || 84;
+      const peek = Math.round(size * 0.55); // show ~55% of head/body
+      const left = Math.max( -peek, r.left - peek );
+      const top  = r.top + 24; // a bit under the header
+      chibiHead.style.left = left + 'px';
+      chibiHead.style.top  = Math.max(8, top) + 'px';
+    }
 
-    vinylBtn.addEventListener('click',()=>{ const pick=trip.vinylChoices[Math.floor(Math.random()*trip.vinylChoices.length)]; vinylResult.textContent="Tonight's pick: "+pick; confetti(60); });
-    treatBtn.addEventListener('click',()=>{ const pick=trip.treats[Math.floor(Math.random()*trip.treats.length)]; treatResult.textContent="Surprise: "+pick; confetti(60); });
+    window.addEventListener('resize', ()=>{
+      if(!storyDone && narrator.classList.contains('show')){ anchorChibi(); }
+      else if(storyDone){ dockChibi(); }
+    });
 
-    const NOTE_KEY='nyc_itin_note'; noteArea.value=localStorage.getItem(NOTE_KEY)||''; saveNote.addEventListener('click',()=>{ localStorage.setItem(NOTE_KEY,noteArea.value); noteSaved.textContent='Saved ✓'; setTimeout(()=>
+    function openApp(){ storyDone = true; app.hidden=false; renderDays(); confetti(120); dockChibi(); }
+
+    /* ===== Itinerary ===== */
+    function renderDays(){ dayTabs.innerHTML=''; trip.days.forEach((d,i)=>{ const b=document.createElement('button'); b.textContent=d.label; b.setAttribute('role','tab'); b.setAttribute('aria-selected', i===0?'true':'false'); b.addEventListener('click',()=>{ document.querySelectorAll('.tabs button').forEach(el=>el.setAttribute('aria-selected','false')); b.setAttribute('aria-selected','true'); renderDay(i) }); dayTabs.appendChild(b) }); renderDay(0) }
+    function renderDay(i){ const d=trip.days[i]; const wrap=document.createElement('section'); wrap.className='card day'; wrap.innerHTML=`<h3 style="margin:.2rem 0 .4rem">${d.label} <span style="font-weight:400;color:#7c6b55">${d.date}</span></h3>`; d.items.forEach(item=>{ const e=document.createElement('article'); e.className='entry'; e.innerHTML=`<div><div style=\"font-size:.95rem; font-weight:600\">${item.title}</div><div class=\"meta\">${item.time}</div><p style=\"margin:.2rem 0 0\">${item.desc||''}${item.notes? ' — <em>'+item.notes+'</em>':''}</p></div><div>${item.link? `<a href=\"${item.link}\" target=\"_blank\" rel=\"noopener\">Open map/site ↗</a>`:''}</div>`; wrap.appendChild(e) }); daysWrap.innerHTML=''; daysWrap.appendChild(wrap) }
+
+    // Widgets
+    vinylBtn.addEventListener('click',()=>{ const pick=trip.vinylChoices[Math.floor(Math.random()*trip.vinylChoices.length)]; vinylResult.textContent = "Tonight's pick: "+pick; confetti(60) });
+    treatBtn.addEventListener('click',()=>{ const pick=trip.treats[Math.floor(Math.random()*trip.treats.length)]; treatResult.textContent = "Surprise: "+pick; confetti(60) });
+
+    // Notes
+    const NOTE_KEY='nyc_itin_note'; noteArea.value=localStorage.getItem(NOTE_KEY)||''; saveNote.addEventListener('click',()=>{ localStorage.setItem(NOTE_KEY,noteArea.value); noteSaved.textContent='Saved ✓'; setTimeout(()=>noteSaved.textContent='',1200) });
+
+    // Export JSON
+    exportJSON.addEventListener('click',()=>{ const blob=new Blob([JSON.stringify(trip,null,2)],{type:'application/json'}); exportJSON.href=URL.createObjectURL(blob) });
+
+    /* ===== Confetti ===== */
+    const cvs=document.getElementById('confetti'); const ctx=cvs.getContext('2d'); let pf=[];
+    function size(){ cvs.width=innerWidth; cvs.height=innerHeight } window.addEventListener('resize',size); size();
+    function confetti(N=100){ const colors=['#4aa3ff','#86d7ff','#ffbf7f','#f5e9d2','#ffffff']; for(let i=0;i<N;i++){ pf.push({x:innerWidth/2,y:80,vx:(Math.random()*2-1)*4,vy:-(2+Math.random()*3),g:.06+Math.random()*.04,s:2+Math.random()*3,c:colors[(Math.random()*colors.length)|0],t:100+Math.random()*80}) } }
+    (function tick(){ ctx.clearRect(0,0,cvs.width,cvs.height); pf.forEach(p=>{ p.t--; p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; ctx.fillStyle=p.c; ctx.fillRect(p.x,p.y,p.s,p.s) }); pf=pf.filter(p=>p.t>0&&p.y<cvs.height+16); requestAnimationFrame(tick) })();
+
+    /* ===== Self-tests (basic) ===== */
+    (function selfTests(){
+      try{
+        console.assert(typeof startNarration === 'function','startNarration exists');
+        console.assert(typeof anchorChibi === 'function','anchorChibi exists');
+        console.assert(typeof dockChibi === 'function','dockChibi exists');
+        console.assert(document.getElementById('countdown'), '#countdown exists');
+        console.assert(document.getElementById('bd-count'), '#bd-count exists');
+      }catch(e){ console.error('[self-tests] failed', e); }
+    })();
+  </script>
+</body>
+</html>
