@@ -8,9 +8,9 @@
   <style>
     :root{
       --sky:#aee3ff; --sky-2:#86d7ff; --sand:#f5e9d2;
-      --ink:#111827; --muted:#6b7280; --card:#fffdf8; --accent:#4aa3ff; --accent-2:#ffbf7f;
+      --ink:#111827; --card:#fffdf8; --accent:#4aa3ff;
       --ring:rgba(74,163,255,.45); --shadow:rgba(0,0,0,.12);
-      --chibi-size:84px; /* tweak 72–100px as you like */
+      --chibi-size:84px; /* tweak 72–100px */
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -28,17 +28,19 @@
     .btn.secondary{ background:#ffe7c9; color:#50381d; box-shadow:0 6px 0 #d7b38a }
     .btn:focus{ outline:2px solid var(--ring); outline-offset:2px }
 
-    /* narrator center (no transform to avoid Chrome glyph jitter) */
+    /* narrator dialog */
     .narrator-layer{ position:fixed; inset:0; z-index:28; display:none }
     .narrator-layer.show{ display:grid; place-items:center }
-    .speech{ position:relative; margin:0 auto; background:var(--card); border:4px solid #e8dcc6; border-radius:12px; padding:1.25rem 1.1rem 1rem; width:min(780px,92vw); box-shadow:0 20px 60px var(--shadow); text-align:left }
+    .speech{ position:relative; margin:0 auto; background:var(--card); border:4px solid #e8dcc6; border-radius:12px; padding:1.1rem 1.1rem 1rem; width:min(780px,92vw); box-shadow:0 20px 60px var(--shadow); text-align:left }
     .speech .txt{ line-height:1.6; font-size:.9rem; font-variant-ligatures:none; font-feature-settings:"liga" 0, "kern" 0; font-kerning:none; -webkit-font-smoothing:antialiased; text-rendering:geometricPrecision }
     .speech .txt.typing{ font-family: ui-monospace, Menlo, Monaco, Consolas, monospace; letter-spacing:0 }
     .speech .who{ display:block; color:#7c6b55; font-size:.75rem; margin-bottom:.25rem }
+    /* reserve space for inline chibi on the left inside the box */
+    .speech.has-chibi-left{ padding-left: calc(var(--chibi-size) + 22px); }
 
-    /* CHIBI OVERLAY (top-most layer) */
+    /* CHIBI overlay (we position it via JS). Hidden by default. */
     #chibiHead{ position:fixed; width:var(--chibi-size); height:var(--chibi-size); z-index:60; pointer-events:none; filter:drop-shadow(0 10px 16px rgba(0,0,0,.25)); animation:bob 2.1s ease-in-out infinite; display:none }
-    #chibiHead img{ width:100%; height:auto; display:block; image-rendering:pixelated; }
+    #chibiHead img{ width:100%; height:auto; display:block; image-rendering:pixelated }
     #chibiHead.wave img{ animation:wave 900ms ease-in-out 1 }
     @keyframes bob{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-6px) } }
     @keyframes wave{ 0%{ rotate:0 } 25%{ rotate:-6deg } 60%{ rotate:4deg } 100%{ rotate:0 } }
@@ -111,7 +113,7 @@
     </div>
   </div>
 
-  <!-- chibi overlay (anchored via JS over the speech box) -->
+  <!-- chibi overlay (inline-left during story; peeks under itinerary after) -->
   <div id="chibiHead" aria-hidden="true">
     <img id="chibiImg" src="gfchibi.png" alt="Chibi" />
   </div>
@@ -212,7 +214,7 @@
     function tickCountdown(){ countdownEl.textContent = daysUntil(trip.startDate); bdCount.textContent = humanCountdown(`${trip.birthday}T00:00:00`); }
     tickCountdown(); setInterval(tickCountdown,1000);
 
-    /* ===== Story flow (anti-jumble) ===== */
+    /* ===== Story flow ===== */
     const lines = [
       "…what will we be doing in NYC, you may ask?",
       "Well, I coded a tiny retro adventure to reveal our plan.",
@@ -226,52 +228,50 @@
     btnKnow.addEventListener('click', showScene2);
     scene2.addEventListener('click', exitScene2);
 
-    async function startNarration() {
-      try {
-        if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    async function startNarration(){
+      try{
+        if(document.fonts && document.fonts.ready) await document.fonts.ready;
         narrator.classList.add('show');
-        anchorChibi();
-        chibiHead.style.display = 'block';
+        speech.classList.add('has-chibi-left'); // text padding so it doesn't collide
+        chibiHead.style.display='block';
+        anchorChibiInlineLeft(); // place inside the dialog box next to the label
         say(lines[++li]);
-      } catch (error) {
-        console.error(error);
-      }
+      }catch(e){ console.error(e); }
     }
 
     function typeText(el, text, cb){ if(isTyping) return; isTyping=true; el.classList.add('typing'); el.textContent=''; let i=0; const step=()=>{ el.textContent += (text[i++]||''); if(i<=text.length){ requestAnimationFrame(step) } else { el.classList.remove('typing'); isTyping=false; cb&&cb() } }; requestAnimationFrame(step) }
     function say(text){ typeText(speechTxt, text, ()=>{ tapHint.classList.add('show'); chibiHead.classList.add('wave'); setTimeout(()=>chibiHead.classList.remove('wave'), 900) }) }
 
-    // global click to advance
     document.addEventListener('click', ()=>{ if(!narrator.classList.contains('show')) return; if(isTyping) return; tapHint.classList.remove('show'); li++; if(li<lines.length){ say(lines[li]) } else { narrator.classList.remove('show'); openApp() } })
 
-    // anchor chibi over the speech box
-    function anchorChibi(){
+    // Place chibi slightly inside the speech box, aligned with the header "your girlfriend"
+    function anchorChibiInlineLeft(){
       const r = speech.getBoundingClientRect();
       const size = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chibi-size')) || 84;
-      const left = r.left + r.width/2 - size/2;   // center above dialog
-      const top  = r.top - size + 12;             // hover just above
+      const margin = 10; // distance from speech's left/top inner edges
+      const left = r.left + margin;
+      const top  = r.top + margin; // near the who label line
       chibiHead.style.left = Math.max(8, left) + 'px';
       chibiHead.style.top  = Math.max(8, top)  + 'px';
     }
 
-    // dock chibi peeking from the left of the itinerary once story is done
-    function dockChibi(){
-      const container = app; // main itinerary container
-      const r = container.getBoundingClientRect();
+    // After story: peek from under the itinerary (bottom-left inside container)
+    function dockChibiPeekUnderItin(){
+      const r = app.getBoundingClientRect();
       const size = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chibi-size')) || 84;
-      const peek = Math.round(size * 0.55); // show ~55% of head/body
-      const left = Math.max( -peek, r.left - peek );
-      const top  = r.top + 24; // a bit under the header
-      chibiHead.style.left = left + 'px';
-      chibiHead.style.top  = Math.max(8, top) + 'px';
+      const visible = 0.45; // show ~45% of the head above the bottom edge
+      const left = r.left + 8;
+      const top  = r.bottom - size * visible;
+      chibiHead.style.left = Math.max(8, left) + 'px';
+      chibiHead.style.top  = Math.min(window.innerHeight - size/3, top) + 'px';
     }
 
     window.addEventListener('resize', ()=>{
-      if(!storyDone && narrator.classList.contains('show')){ anchorChibi(); }
-      else if(storyDone){ dockChibi(); }
+      if(!storyDone && narrator.classList.contains('show')){ anchorChibiInlineLeft(); }
+      else if(storyDone){ dockChibiPeekUnderItin(); }
     });
 
-    function openApp(){ storyDone = true; app.hidden=false; renderDays(); confetti(120); dockChibi(); }
+    function openApp(){ storyDone = true; app.hidden=false; renderDays(); confetti(120); dockChibiPeekUnderItin(); }
 
     /* ===== Itinerary ===== */
     function renderDays(){ dayTabs.innerHTML=''; trip.days.forEach((d,i)=>{ const b=document.createElement('button'); b.textContent=d.label; b.setAttribute('role','tab'); b.setAttribute('aria-selected', i===0?'true':'false'); b.addEventListener('click',()=>{ document.querySelectorAll('.tabs button').forEach(el=>el.setAttribute('aria-selected','false')); b.setAttribute('aria-selected','true'); renderDay(i) }); dayTabs.appendChild(b) }); renderDay(0) }
@@ -293,13 +293,11 @@
     function confetti(N=100){ const colors=['#4aa3ff','#86d7ff','#ffbf7f','#f5e9d2','#ffffff']; for(let i=0;i<N;i++){ pf.push({x:innerWidth/2,y:80,vx:(Math.random()*2-1)*4,vy:-(2+Math.random()*3),g:.06+Math.random()*.04,s:2+Math.random()*3,c:colors[(Math.random()*colors.length)|0],t:100+Math.random()*80}) } }
     (function tick(){ ctx.clearRect(0,0,cvs.width,cvs.height); pf.forEach(p=>{ p.t--; p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; ctx.fillStyle=p.c; ctx.fillRect(p.x,p.y,p.s,p.s) }); pf=pf.filter(p=>p.t>0&&p.y<cvs.height+16); requestAnimationFrame(tick) })();
 
-    /* ===== Self-tests (basic) ===== */
+    /* ===== Self-tests ===== */
     (function selfTests(){
       try{
-        console.assert(typeof startNarration === 'function','startNarration exists');
-        console.assert(typeof anchorChibi === 'function','anchorChibi exists');
-        console.assert(typeof dockChibi === 'function','dockChibi exists');
-        console.assert(document.getElementById('countdown'), '#countdown exists');
+        console.assert(typeof anchorChibiInlineLeft === 'function','anchorChibiInlineLeft exists');
+        console.assert(typeof dockChibiPeekUnderItin === 'function','dockChibiPeekUnderItin exists');
         console.assert(document.getElementById('bd-count'), '#bd-count exists');
       }catch(e){ console.error('[self-tests] failed', e); }
     })();
