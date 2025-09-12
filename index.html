@@ -4,19 +4,23 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>yorknew city birthday route</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <!-- Block font swap so Chrome doesn't swap mid-typing -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=block" rel="stylesheet">
   <style>
     :root{
       --sky:#aee3ff; --sky-2:#86d7ff; --sand:#f5e9d2;
       --ink:#111827; --muted:#6b7280; --card:#fffdf8; --accent:#4aa3ff; --accent-2:#ffbf7f;
       --ring:rgba(74,163,255,.45); --shadow:rgba(0,0,0,.12);
+      --chibi-size:80px; /* adjust 72–96px to taste */
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{margin:0; background:linear-gradient(180deg,var(--sky) 0%,var(--sky-2) 50%,var(--sand) 100%); color:var(--ink); font-family:'Press Start 2P', ui-monospace, Menlo, Consolas, monospace}
+
     header.hero{ text-align:center; padding:1.25rem .8rem .4rem }
     header.hero h1{ margin:.2rem 0; font-size:clamp(1.1rem,2.6vw,1.6rem) }
     header.hero .sub{ color:#233; opacity:.9; font-size:.8rem }
+
     .scene{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:1rem; z-index:30 }
     .scene.active{ display:flex }
     .modal{ width:min(740px,100%); background:var(--card); border:4px solid #e8dcc6; border-radius:12px; padding:1rem; box-shadow:0 20px 60px var(--shadow); text-align:center }
@@ -24,23 +28,47 @@
     .btn{ background:var(--accent); color:#fff; border:none; padding:.75rem 1rem; border-radius:10px; box-shadow:0 6px 0 #2b79c5; cursor:pointer }
     .btn.secondary{ background:#ffe7c9; color:#50381d; box-shadow:0 6px 0 #d7b38a }
     .btn:focus{ outline:2px solid var(--ring); outline-offset:2px }
-    /* narrator */
+
+    /* narrator — center via grid (no transform) for Chrome stability */
     .narrator-layer{ position:fixed; inset:0; z-index:28; display:none }
-    .narrator-layer.show{ display:block }
-    .speech{ position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); display:flex; align-items:center; gap:14px; background:var(--card); border:4px solid #e8dcc6; border-radius:12px; padding:1rem 1.1rem; width:min(780px,92vw); box-shadow:0 20px 60px var(--shadow) }
-    .speech .txt{ line-height:1.6; font-size:.8rem }
-    .speech .who{ display:block; color:#7c6b55; font-size:.7rem; margin-bottom:.25rem }
+    .narrator-layer.show{ display:grid; place-items:center }
+
+    .speech{ position:relative; margin:0 auto;
+      display:flex; align-items:center; gap:14px; flex-wrap:nowrap; overflow:hidden;
+      background:var(--card); border:4px solid #e8dcc6; border-radius:12px; padding:1rem 1.1rem;
+      width:min(780px,92vw); min-height: calc(var(--chibi-size) + 24px); box-shadow:0 20px 60px var(--shadow);
+      backface-visibility:hidden; will-change:contents; contain: content;
+    }
+    /* While typing, use a stable system-mono to prevent any glyph jump, then swap back */
+    .speech .txt{ line-height:1.6; font-size:.8rem; flex:1; text-align:left;
+      font-variant-ligatures:none; font-feature-settings:"liga" 0, "kern" 0, "clig" 0, "calt" 0; font-kerning:none;
+      -webkit-font-smoothing:antialiased; text-rendering:geometricPrecision;
+    }
+    .speech .txt.typing{ font-family: ui-monospace, Menlo, Monaco, Consolas, monospace; letter-spacing:0; }
+    .speech .who{ display:block; color:#7c6b55; font-size:.7rem; margin-bottom:.25rem; font-variant-ligatures:none; font-feature-settings:"liga" 0, "kern" 0; font-kerning:none; }
+
     /* chibi (no mini bubble) */
-    .chibi-head{ --size:80px; position:relative; width:var(--size); height:var(--size); user-select:none; touch-action:none; filter:drop-shadow(0 8px 14px rgba(0,0,0,.25)); animation:bob 2.1s ease-in-out infinite; }
-    .chibi-head img {width:100%; height:auto; display:block; object-fit:contain; image-rendering:pixelated; }
+    .chibi-head{ --size:var(--chibi-size); flex:0 0 var(--chibi-size);
+      position:relative; width:var(--size); height:var(--size); user-select:none; touch-action:none;
+      filter:drop-shadow(0 8px 14px rgba(0,0,0,.25)); animation:bob 2.1s ease-in-out infinite; }
+    .chibi-head img {width:100%; height:auto; display:block; object-fit:contain; image-rendering:pixelated; transform-origin:50% 90%; }
     .chibi-head.wave img{ animation:wave 900ms ease-in-out 1; }
     @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
     @keyframes wave{0%{ rotate:0 }25%{ rotate:-6deg }60%{ rotate:4deg }100%{ rotate:0 }}
+
     /* click-anywhere hint */
     #tapHint{ position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.72); color:#fff; padding:.55rem .9rem; border-radius:10px; font-size:.7rem; z-index:29; display:none }
     #tapHint.show{ display:block }
+
     /* retro grid background for app */
     body::before{ content:""; position:fixed; inset:0; background-size:32px 32px; background-image: linear-gradient(to right, rgba(0,0,0,.15) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,.15) 1px, transparent 1px); pointer-events:none; z-index:0; }
+
+    /* itinerary area uses a cleaner font for readability */
+    main, .entry, .widget, .tabs button, .day h3, .meta, .result, textarea, small{
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      letter-spacing: 0; line-height: 1.45;
+    }
+
     main{ position:relative; padding: 0 1rem 2.4rem; max-width:1000px; margin:0 auto; z-index:1 }
     .tabs{ display:flex; gap:.5rem; flex-wrap:wrap; margin:1rem 0; justify-content:center }
     .tabs button{ background:#e9f6ff; color:#174260; border:none; padding:.6rem .8rem; border-radius:10px; cursor:pointer; box-shadow:0 4px 0 #badcf4 }
@@ -53,11 +81,27 @@
     .widgets{ display:grid; grid-template-columns:1fr; gap:1rem }
     .widget{ padding:1rem }
     @media(min-width:720px){ .widgets{ grid-template-columns:repeat(3,1fr) } }
-    footer .bar{ display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:0 1rem 2rem; max-width:1000px; margin:0 auto }
+
+    footer .bar{ display:flex; justify-content:flex-end; align-items:center; gap:1rem; padding:0 1rem 2rem; max-width:1000px; margin:0 auto }
+
     #confetti{ position:fixed; inset:0; pointer-events:none; z-index:10 }
+
     /* Yorknew City BG for hype scene */
     #scene2{ background:url('yorknew1.png') center/cover no-repeat; }
     #scene2 .modal{ background:rgba(255,255,255,0.85); }
+
+    /* Export pill fixed at bottom-right; smaller, subtle */
+    #exportJSON{
+      position:fixed; right:12px; bottom:12px; z-index:31;
+      background:#ffffffcc; border:2px solid #e8dcc6; border-radius:999px; padding:.4rem .6rem;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; font-size:.72rem; text-decoration:none; color:#174260;
+      box-shadow:0 8px 18px rgba(0,0,0,.15);
+    }
+    #exportJSON:hover{ background:#fff; }
+
+    /* responsive chibi sizing */
+    @media (max-width: 600px){ :root{ --chibi-size:72px; } }
+    @media (min-width: 1200px){ :root{ --chibi-size:96px; } }
   </style>
 </head>
 <body>
@@ -98,7 +142,6 @@
   <main id="app" hidden>
     <nav id="dayTabs" class="tabs" role="tablist" aria-label="Itinerary days"></nav>
     <section id="days"></section>
-    <!-- three widgets at bottom -->
     <section class="widgets">
       <article class="widget card">
         <h3>🎵 Vinyl Picker</h3>
@@ -123,7 +166,6 @@
 
   <footer>
     <div class="bar">
-      <button id="shareBtn" class="btn">Share / Save</button>
       <a id="exportJSON" download="itinerary.json" href="#">Export plan JSON</a>
     </div>
   </footer>
@@ -165,7 +207,6 @@
 
     /* ===== Helpers ===== */
     const $ = (q,root=document)=>root.querySelector(q);
-    const $$ = (q,root=document)=>[...root.querySelectorAll(q)];
 
     const countdownEl = $('#countdown');
     const scene1=$('#scene1'), scene2=$('#scene2');
@@ -182,7 +223,7 @@
     const vinylBtn=$('#vinylBtn'), vinylResult=$('#vinylResult');
     const treatBtn=$('#treatBtn'), treatResult=$('#treatResult');
     const noteArea=$('#noteArea'), saveNote=$('#saveNote'), noteSaved=$('#noteSaved');
-    const shareBtn=$('#shareBtn'), exportJSON=$('#exportJSON');
+    const exportJSON=$('#exportJSON');
 
     /* ===== Countdown ===== */
     function fmtTwo(n){return String(n).padStart(2,'0')}
@@ -205,8 +246,17 @@
     btnKnow.addEventListener('click', showScene2);
     scene2.addEventListener('click', exitScene2);
 
-    function startNarration(){ narrator.classList.add('show'); say(lines[++li]); }
-    function typeText(el, text, cb){ el.textContent=''; let i=0; const t=setInterval(()=>{ el.textContent+=(text[i++]||''); if(i>=text.length){ clearInterval(t); cb&&cb(); } },18); }
+    async function startNarration(){
+      // Wait for the pixel font to finish loading before first type to prevent scrambling
+      try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch{}
+      narrator.classList.add('show'); say(lines[++li]);
+    }
+    function typeText(el, text, cb){
+      el.classList.add('typing'); // Chrome-safe typing font
+      el.textContent=''; let i=0;
+      const step=()=>{ el.textContent += (text[i++] || ''); if(i<=text.length){ requestAnimationFrame(step); } else { el.classList.remove('typing'); cb&&cb(); } };
+      requestAnimationFrame(step);
+    }
     function say(text){ typeText(speechTxt, text, ()=> tapHint.classList.add('show')); }
 
     // Click ANYWHERE to continue when narrator is visible
@@ -226,7 +276,7 @@
       trip.days.forEach((d,i)=>{
         const b=document.createElement('button');
         b.textContent=d.label; b.setAttribute('role','tab'); b.setAttribute('aria-selected', i===0?'true':'false');
-        b.addEventListener('click',()=>{ $$('.tabs button').forEach(el=>el.setAttribute('aria-selected','false')); b.setAttribute('aria-selected','true'); renderDay(i); });
+        b.addEventListener('click',()=>{ document.querySelectorAll('.tabs button').forEach(el=>el.setAttribute('aria-selected','false')); b.setAttribute('aria-selected','true'); renderDay(i); });
         dayTabs.appendChild(b);
       });
       renderDay(0);
@@ -237,7 +287,7 @@
       wrap.innerHTML=`<h3 style="margin:.2rem 0 .4rem">${d.label} <span style="font-weight:400;color:#7c6b55">${d.date}</span></h3>`;
       d.items.forEach(item=>{
         const e=document.createElement('article'); e.className='entry';
-        e.innerHTML=`<div><div style=\"font-size:.8rem\">${item.title}</div><div class=\"meta\">${item.time}</div><p>${item.desc||''}${item.notes? ' — <em>'+item.notes+'</em>':''}</p></div><div>${item.link? `<a href=\"${item.link}\" target=\"_blank\" rel=\"noopener\">Open map/site ↗</a>`:''}</div>`;
+        e.innerHTML=`<div><div style=\"font-size:.95rem; font-weight:600\">${item.title}</div><div class=\"meta\">${item.time}</div><p style=\"margin:.2rem 0 0\">${item.desc||''}${item.notes? ' — <em>'+item.notes+'</em>':''}</p></div><div>${item.link? `<a href=\"${item.link}\" target=\"_blank\" rel=\"noopener\">Open map/site ↗</a>`:''}</div>`;
         wrap.appendChild(e);
       });
       daysWrap.innerHTML=''; daysWrap.appendChild(wrap);
@@ -250,8 +300,7 @@
     // Notes
     const NOTE_KEY='nyc_itin_note'; noteArea.value=localStorage.getItem(NOTE_KEY)||''; saveNote.addEventListener('click',()=>{ localStorage.setItem(NOTE_KEY, noteArea.value); noteSaved.textContent='Saved ✓'; setTimeout(()=>noteSaved.textContent='',1200); });
 
-    // Share/export
-    shareBtn.addEventListener('click', async ()=>{ const data={title:'NYC Birthday Adventure', text:'Peek at our surprise itinerary 💫', url:location.href}; if(navigator.share){ try{ await navigator.share(data);}catch{} } else { await navigator.clipboard.writeText(location.href); alert('Link copied!'); } });
+    // Export JSON (corner pill)
     exportJSON.addEventListener('click',()=>{ const blob=new Blob([JSON.stringify(trip,null,2)],{type:'application/json'}); exportJSON.href=URL.createObjectURL(blob); });
 
     /* ===== Confetti ===== */
