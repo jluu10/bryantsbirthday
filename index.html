@@ -127,7 +127,7 @@
   <!-- Scene 2.6: Love Message -->
   <section id="sceneLove" class="scene">
     <div class="modal">
-      <h2>Yes, you! 💖</h2>
+      <h2>Yes,you! 💖</h2>
       <p style="max-width:640px;margin:0 auto 0.6rem; line-height:1.5; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial">
         I love Bryant Giang. I am so happy to have the opportunity to celebrate your birthday and that you chose to spend it with me. I hope you enjoy the rest of your gift and can’t wait to celebrate many more with you, my lovely Bryant :3
       </p>
@@ -159,11 +159,15 @@
         <button id="vinylBtn" class="btn">Spin</button>
         <div id="vinylResult" class="result" style="margin-top:.5rem"></div>
       </article>
-      <article class="widget card">
-        <h3>🍕 Secret Treat</h3>
-        <p>Click to reveal your post-dinner treat.</p>
-        <button id="treatBtn" class="btn">Reveal</button>
-        <div id="treatResult" class="result" style="margin-top:.5rem"></div>
+     <article class="widget card">
+  <h3>Nailong</h3>
+  <p>Click to hit an emote.</p>
+  <div class="emote-frame">
+    <img id="emoteImg" alt="Nailong emote" class="emote-img" style="display:none" />
+    <div id="emoteCaption" class="result" style="margin-top:.25rem"></div>
+  </div>
+  <button id="emoteBtn" class="btn" style="margin-top:.6rem">Hit an emote</button>
+</article>
       </article>
       <article class="widget card">
         <h3>💌 Little Notes</h3>
@@ -327,7 +331,7 @@
     function dockChibiPeekUnderItin(){
       const r = app.getBoundingClientRect();
       const size = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chibi-size')) || 84;
-      const visible = 0.45; // show ~45% of the head above the bottom edge
+      const visible = 0.55; // show ~45% of the head above the bottom edge
       const left = r.left + 8;
       const top  = r.bottom - size * visible;
       chibiHead.style.left = Math.max(8, left) + 'px';
