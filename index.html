@@ -367,7 +367,7 @@
     function dockChibiPeekUnderItin(){
       const r = app.getBoundingClientRect();
       const size = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chibi-size')) || 84;
-      const visible = 0.55;
+      const visible = 0.60;
       const left = r.left + 8;
       const top  = r.bottom - size * visible;
       chibiHead.style.left = Math.max(8, left) + 'px';
@@ -430,7 +430,7 @@
       "IMG_0497.jpg",
       "IMG_0496.JPG",
       "IMG_0495.JPG",
-      "IMG_0144.PNG"
+      "IMG_0144.png"
     ];
     const EMOTE_CAPTIONS = [
       "serious side-eye",
