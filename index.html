@@ -14,11 +14,7 @@
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{
-      margin:0; color:var(--ink);
-      background:linear-gradient(180deg,var(--sky) 0%,var(--sky-2) 50%,var(--sand) 100%);
-      font-family:'Press Start 2P', ui-monospace, Menlo, Consolas, monospace
-    }
+    body{margin:0; background:linear-gradient(180deg,var(--sky) 0%,var(--sky-2) 50%,var(--sand) 100%); color:var(--ink); font-family:'Press Start 2P', ui-monospace, Menlo, Consolas, monospace}
 
     header.hero{ text-align:center; padding:1.25rem .8rem .4rem }
     header.hero h1{ margin:.2rem 0; font-size:clamp(1.1rem,2.6vw,1.6rem) }
@@ -67,10 +63,19 @@
     .entry .meta{ color:#7c6b55; font-size:.9rem }
     .entry a{ color:#0b66b2; text-decoration:none }
 
-    /* widgets layout (2-up on desktop since Vinyl is gone) */
+    /* widgets: 2-up once wide */
     .widgets{ display:grid; grid-template-columns:1fr; gap:1rem }
-    @media(min-width:720px){ .widgets{ grid-template-columns:repeat(2,1fr) } }
     .widget{ padding:1rem }
+    @media(min-width:720px){ .widgets{ grid-template-columns:repeat(2,1fr) } }
+
+    /* emote frame (retro vibe) */
+    .emote-frame{
+      display:grid; place-items:center; background:#fffdf8;
+      border:4px solid #e8dcc6; border-radius:12px; padding:.6rem;
+      min-height:220px; box-shadow:0 8px 18px var(--shadow);
+      background-image: repeating-linear-gradient(45deg, rgba(0,0,0,.03) 0 8px, transparent 8px 16px);
+    }
+    .emote-img{ max-width:100%; max-height:180px; image-rendering:pixelated; border-radius:10px; }
 
     footer .bar{ display:flex; justify-content:flex-end; align-items:center; gap:1rem; padding:0 1rem 2rem; max-width:1000px; margin:0 auto }
 
@@ -80,24 +85,24 @@
     #scene2{ background:url('yorknew1.png') center/cover no-repeat }
     #scene2 .modal{ background:rgba(255,255,255,0.85) }
 
-    /* === Nailong (retro sprite vibe) === */
-    .emote-frame{ margin-top:.6rem; display:flex; flex-direction:column; align-items:center; gap:.35rem }
-    .emote-img{
-      max-width:100%; border:4px solid #e8dcc6; border-radius:10px; background:#fff;
-      box-shadow:0 8px 18px rgba(0,0,0,.25); image-rendering:pixelated;
+    /* ==== Google Sheets pixel pill ==== */
+    .sheet-pill {
+      display:inline-flex; align-items:center; gap:.6rem;
+      background:var(--card);
+      border:4px solid #e8dcc6; border-radius:12px;
+      padding:.55rem .9rem; box-shadow:0 10px 20px var(--shadow);
+      text-decoration:none; color:#174260; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
     }
-    .emote-img.flip{ animation:flipIn .45s ease-out }
-    @keyframes flipIn{
-      0%{ transform:rotateY(90deg); opacity:0 }
-      50%{ transform:rotateY(10deg); opacity:.6 }
-      100%{ transform:rotateY(0); opacity:1 }
+    .sheet-pill .emoji{ font-family:'Press Start 2P', ui-monospace, Menlo, Consolas, monospace; }
+    .sheet-pill .label{ font-weight:700 }
+    .sheet-pill:hover{ transform:translateY(-1px); box-shadow:0 14px 26px rgba(0,0,0,.18) }
+    .sheet-pill:focus{ outline:2px solid var(--ring); outline-offset:3px; }
+    .sheet-pill::after{
+      content:"✦"; margin-left:.3rem; color:#ffbf7f; opacity:.85;
+      animation:spark 1.8s ease-in-out infinite;
+      font-family:'Press Start 2P', ui-monospace, Menlo, Consolas, monospace; font-size:.8rem;
     }
-    .emote-img.glitch{ animation:glitchPix .2s steps(2,end) 1 }
-    @keyframes glitchPix{
-      0%{ filter:contrast(200%) saturate(150%) hue-rotate(20deg) }
-      50%{ filter:contrast(300%) saturate(200%) hue-rotate(-20deg) }
-      100%{ filter:none }
-    }
+    @keyframes spark{ 0%,100%{ transform:translateY(0) rotate(0deg)} 50%{ transform:translateY(-2px) rotate(10deg)} }
   </style>
 </head>
 <body>
@@ -174,25 +179,34 @@
 
   <main id="app" hidden>
     <nav id="dayTabs" class="tabs" role="tablist" aria-label="Itinerary days"></nav>
+
+    <!-- Cute on-theme link to the full Google Sheet -->
+    <div style="display:flex; justify-content:center; margin:.4rem 0 1rem;">
+      <a id="sheetLink" class="sheet-pill" href="#" target="_blank" rel="noopener">
+        <span class="emoji">🧾</span>
+        <span class="label">Full itinerary (Google Sheets)</span>
+      </a>
+    </div>
+
     <section id="days"></section>
 
-    <!-- Two widgets (Vinyl removed): Nailong + Notes -->
+    <!-- Widgets (Vinyl removed; 2-up layout) -->
     <section class="widgets">
-      <article class="widget card" id="nailongWidget">
-        <h3>🟡 Nailong</h3>
+      <article class="widget card">
+        <h3>Nailong</h3>
         <p>Click to hit an emote.</p>
         <div class="emote-frame">
           <img id="emoteImg" alt="Nailong emote" class="emote-img" style="display:none" />
           <div id="emoteCaption" class="result" style="margin-top:.25rem"></div>
         </div>
-        <button id="emoteBtn" class="btn" style="margin-top:.6rem">hit an emote</button>
+        <button id="emoteBtn" class="btn" style="margin-top:.6rem">Hit an emote</button>
       </article>
 
       <article class="widget card">
         <h3>💌 Little Notes</h3>
-        <textarea id="noteArea" placeholder="Leave a sweet note here…" style="width:100%;min-height:160px;border:2px dashed #ead9ba;border-radius:10px;padding:.6rem .8rem"></textarea>
+        <textarea id="noteArea" placeholder="Leave a sweet note here…" style="width:100%;min-height:172px;border:2px dashed #ead9ba;border-radius:10px;padding:.6rem .8rem"></textarea>
         <button id="saveNote" class="btn" style="margin-top:.6rem">Save</button>
-        <small id="noteSaved" role="status" style="font-size:.75rem"></small>
+        <small id="noteSaved" role="status" style="font-size:.7rem"></small>
       </article>
     </section>
   </main>
@@ -212,37 +226,50 @@
       birthday:  "2025-10-03",
       days: [
         { label: "Day 1 · Thu", date: "2025-10-02", items:[
-          { time:"Morning",   title:"Land & Drop Bags",        desc:"Drop bags and head to FLUSHING!", link:"https://maps.app.goo.gl/RNf8tJnhVzJcTk6S8", notes:"Caffeine @ Càphê Đen + Offepeak" },
-          { time:"Afternoon", title:"Flushing Food Crawl",     desc:"We start our NYC adventure munchin’ + dilly-dallying.", link:"https://maps.app.goo.gl/dThBuXjiSDyp7B3G9", notes:"Eight Jane, Shanghai You Garden, Tesso…" },
-          { time:"Afternoon", title:"Restore XP",              desc:"We buy some essentials and head home to rest :P", link:"https://maps.app.goo.gl/f114LiXaM1GEB7cB7", notes:"~45 min train ride" },
-          { time:"Evening",   title:"NYC Clichés (Optional)",  desc:"Bike Central Park or visit the Met!", link:"https://maps.app.goo.gl/LzjBw7LhppjEbR6ZA", notes:"xoxo gossip girl" },
-          { time:"Evening",   title:"Din Din",                 desc:"Dinner @ Kaia Wine Bar", link:"https://maps.app.goo.gl/7y5X9TmsRNpLuEUP9", notes:"South African tapas + HH" },
-          { time:"Night",     title:"Piano Bars (Optional)",   desc:"Casual bars to mellow out the night", link:"https://maps.app.goo.gl/y5DxLZhxn3oTtvP48" },
-          { time:"Night",     title:"Head Home",               desc:"Go home and slump", link:"https://maps.app.goo.gl/y5DxLZhxn3oTtvP48", notes:"Roosevelt Island Tram = pretty lights" }
+          { time:"Morning", title:"Land & Drop Bags", desc:"Drop bags and head to FLUSHING!", link:"https://maps.app.goo.gl/RNf8tJnhVzJcTk6S8", notes:"Caffeine @ Caphe Den + Offepeak" },
+          { time:"Afternoon", title:"Flushing Food Crawl", desc:"We start our nyc adventure munchin + dilly dallying'", link:"https://maps.app.goo.gl/dThBuXjiSDyp7B3G9", notes:"Options: Eight Jane, Shanghai You Garden, Tesso" },
+          { time:"Afternoon", title:"Restore XP", desc:"We buy some essentials and head home to rest :P", link:"https://maps.app.goo.gl/f114LiXaM1GEB7cB7", notes:"45 min train ride" },
+          { time:"Evening", title:"NYC Cliche's (Optional)", desc:"Bike Central Park or visit the Met!", link:"https://maps.app.goo.gl/LzjBw7LhppjEbR6ZA", notes:"XoXo gossip girl" },
+          { time:"Evening", title:"Din Din", desc:"Dinner @ Kaia Wine Bar", link:"https://maps.app.goo.gl/7y5X9TmsRNpLuEUP9", notes:"South African tapas with Happy Hour" },
+          { time:"Night", title:"Piano Bars (Optional)", desc:"Casual bars to mellow out the night", link:"https://maps.app.goo.gl/y5DxLZhxn3oTtvP48" },
+          { time:"Night", title:"Head Home", desc:"Go home and slump", link:"https://maps.app.goo.gl/y5DxLZhxn3oTtvP48", notes:"Roosevelt Island Tram for a pretty light scenic route" }
         ]},
         { label: "Day 2 · Fri · 🎂 Birthday", date: "2025-10-03", items:[
-          { time:"Morning", title:"Slow morning walk", desc:"Stroll a park or waterfront boardwalk.", link:"#"},
-          { time:"Dinner",  title:"Omakase → Pizza & Vinyl", desc:"Chef’s counter; then slice + vinyl lounge.", link:"#", notes:"Bring ID for vinyl bar."},
-          { time:"Late",    title:"Rooftop Nightcap", desc:"City lights & photos.", link:"#"}
+          { time:"Morning", title:"Slow morning walk", desc:"Stroll a park or waterfront boardwalk.", link:"#" },
+          { time:"Dinner", title:"Omakase → Pizza & Vinyl", desc:"Chef’s counter; after, a slice and pick a vinyl at a lounge.", link:"#", notes:"Bring ID for vinyl bar."},
+          { time:"Late", title:"Rooftop Nightcap", desc:"City lights & photos.", link:"#" }
         ]},
         { label: "Day 3 · Sat", date: "2025-10-04", items:[
-          { time:"Daytime", title:"Neighborhood stroll + thrift", desc:"Williamsburg or LES; vintage browse.", link:"#"},
-          { time:"Evening", title:"Showtime", desc:"Pick a concert/comedy based on mood.", link:"#"}
+          { time:"Daytime", title:"Neighborhood Stroll & Thrift Pop-up", desc:"Williamsburg or LES walk; vintage browse.", link:"#" },
+          { time:"Evening", title:"Showtime", desc:"Pick a concert/comedy based on mood.", link:"#" }
         ]},
         { label: "Day 4 · Sun", date: "2025-10-05", items:[
-          { time:"Morning", title:"Museum or gallery hop", desc:"Choose 1–2 spots; keep it light.", link:"#"},
-          { time:"Evening", title:"Sunset walk & dessert", desc:"Pier photos + sweet treat.", link:"#"}
+          { time:"Morning", title:"Museum or Gallery Hop", desc:"Choose 1–2 spots and keep it light.", link:"#" },
+          { time:"Evening", title:"Sunset Walk & Dessert", desc:"Pier photos + sweet treat.", link:"#" }
         ]},
         { label: "Day 5 · Mon", date: "2025-10-06", items:[
-          { time:"Morning", title:"Bonus day", desc:"One more NYC stroll, coffee & park.", link:"#"},
-          { time:"Afternoon", title:"Last bites & souvenirs", desc:"Pick up gifts and head to airport.", link:"#"}
+          { time:"Morning", title:"Bonus Day", desc:"One more NYC stroll, coffee & park.", link:"#" },
+          { time:"Afternoon", title:"Last bites & souvenirs", desc:"Pick up gifts and head to airport.", link:"#" }
         ]}
-      ]
+      ],
+      treats: ["Joe’s slice 🍕","Levain cookie 🍪","Soft-serve 🍦","Arthur Avenue cannoli 🥐"]
     };
+
+    /* ===== Config: external links & emotes ===== */
+    const SHEETS_URL = "https://docs.google.com/spreadsheets/d/1HPOUlXxzxgpfLVguWXMY69CCWhEJrA6RqvAWm_c2tVc/edit?usp=sharing"; // <— paste your Google Sheets URL
+    const EMOTE_IMAGES = [
+      "IMG_0502.JPG","IMG_0501.JPG","IMG_0500.jpg","IMG_0499.jpg",
+      "IMG_0498.JPG","IMG_0497.jpg","IMG_0496.JPG","IMG_0495.JPG",
+      "IMG_0144.PNG"
+      // skip the .HEIC for cross-browser unless you converted it
+    ];
+    const EMOTE_CAPTIONS = [
+      "Nailong jam!", "big smile!!", "grr but cute", "peekaboo",
+      "soft mode", "serious face", "victory", "blep", "heart eyes"
+    ];
 
     /* ===== Helpers & Refs ===== */
     const $ = (q,root=document)=>root.querySelector(q);
-
     const countdownEl = $('#countdown');
     const scene1=$('#scene1'), scene2=$('#scene2');
     const sceneSassy=$('#sceneSassy');
@@ -263,7 +290,14 @@
 
     const noteArea=$('#noteArea'), saveNote=$('#saveNote'), noteSaved=$('#noteSaved');
     const exportJSON=$('#exportJSON');
+    const sheetLink=$('#sheetLink');
 
+    // Emote widget
+    const emoteBtn=$('#emoteBtn');
+    const emoteImg=$('#emoteImg');
+    const emoteCaption=$('#emoteCaption');
+
+    // Quiz
     const quizInput=$('#quizInput');
     const quizBtn=$('#quizBtn');
     const quizErr=$('#quizErr');
@@ -327,20 +361,15 @@
     }
 
     function typeText(el, text, cb){
-      if(isTyping) return; isTyping=true;
-      el.classList.add('typing'); el.textContent=''; let i=0;
-      const step=()=>{
-        el.textContent += (text[i++]||'');
-        if(i<=text.length){ requestAnimationFrame(step) }
-        else { el.classList.remove('typing'); isTyping=false; cb&&cb() }
-      };
+      if(isTyping) return;
+      isTyping=true; el.classList.add('typing'); el.textContent=''; let i=0;
+      const step=()=>{ el.textContent += (text[i++]||''); if(i<=text.length){ requestAnimationFrame(step) } else { el.classList.remove('typing'); isTyping=false; cb&&cb() } };
       requestAnimationFrame(step);
     }
     function say(text){
       typeText(speechTxt, text, ()=>{
         tapHint.classList.add('show');
-        chibiHead.classList.add('wave');
-        setTimeout(()=>chibiHead.classList.remove('wave'), 900);
+        chibiHead.classList.add('wave'); setTimeout(()=>chibiHead.classList.remove('wave'), 900);
       });
     }
 
@@ -355,21 +384,22 @@
     // Place chibi slightly inside the speech box, aligned with the header "your girlfriend"
     function anchorChibiInlineLeft(){
       const r = speech.getBoundingClientRect();
-      const size = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chibi-size')) || 84;
-      const margin = 10;
+      const margin = 10; // distance from speech's left/top inner edges
       const left = r.left + margin;
-      const top  = r.top + margin;
+      const top  = r.top + margin; // near the who label line
       chibiHead.style.left = Math.max(8, left) + 'px';
       chibiHead.style.top  = Math.max(8, top)  + 'px';
     }
 
     // After story: peek from under the itinerary (bottom-left inside container)
+    // Nudge amount so more of the face shows:
+    const CHIBI_PEEK_UP = 18; // <— Increase this number to move the head UP more (e.g., 30, 40)
     function dockChibiPeekUnderItin(){
       const r = app.getBoundingClientRect();
       const size = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--chibi-size')) || 84;
-      const visible = 0.60;
+      const visible = 0.55; // portion showing above bottom
       const left = r.left + 8;
-      const top  = r.bottom - size * visible;
+      const top  = r.bottom - size * visible - CHIBI_PEEK_UP;
       chibiHead.style.left = Math.max(8, left) + 'px';
       chibiHead.style.top  = Math.min(window.innerHeight - size/3, top) + 'px';
     }
@@ -379,7 +409,14 @@
       else if(storyDone){ dockChibiPeekUnderItin(); }
     });
 
-    function openApp(){ storyDone = true; app.hidden=false; renderDays(); confetti(120); dockChibiPeekUnderItin(); }
+    function openApp(){
+      storyDone = true;
+      app.hidden=false;
+      sheetLink.href = SHEETS_URL; // set the pill link
+      renderDays();
+      confetti(120);
+      dockChibiPeekUnderItin();
+    }
 
     /* ===== Itinerary ===== */
     function renderDays(){
@@ -412,66 +449,60 @@
       daysWrap.innerHTML=''; daysWrap.appendChild(wrap);
     }
 
+    /* ===== Widgets ===== */
+    // Emote
+    const emoteHistory = new Set();
+    function pickEmoteIndex(){
+      // Avoid repeating until we've shown all
+      if(emoteHistory.size === EMOTE_IMAGES.length) emoteHistory.clear();
+      let idx = Math.floor(Math.random()*EMOTE_IMAGES.length);
+      while(emoteHistory.has(idx)) idx = Math.floor(Math.random()*EMOTE_IMAGES.length);
+      emoteHistory.add(idx); return idx;
+    }
+    emoteBtn.addEventListener('click', ()=>{
+      const idx = pickEmoteIndex();
+      const src = EMOTE_IMAGES[idx];
+      const cap = EMOTE_CAPTIONS[idx] || "emote!";
+      emoteImg.src = src; emoteImg.style.display = 'block';
+      emoteCaption.textContent = cap;
+      confetti(40);
+    });
+
     // Notes
     const NOTE_KEY='nyc_itin_note';
     noteArea.value=localStorage.getItem(NOTE_KEY)||'';
-    saveNote.addEventListener('click',()=>{ localStorage.setItem(NOTE_KEY,noteArea.value); noteSaved.textContent='Saved ✓'; setTimeout(()=>noteSaved.textContent='',1200) });
+    saveNote.addEventListener('click',()=>{
+      localStorage.setItem(NOTE_KEY,noteArea.value);
+      noteSaved.textContent='Saved ✓'; setTimeout(()=>noteSaved.textContent='',1200);
+    });
 
     // Export JSON
-    exportJSON.addEventListener('click',()=>{ const blob=new Blob([JSON.stringify(trip,null,2)],{type:'application/json'}); exportJSON.href=URL.createObjectURL(blob) });
-
-    /* ===== Nailong Emote Spinner ===== */
-    const EMOTE_SOURCES = [
-      "IMG_0502.JPG",
-      "IMG_0501.JPG",
-      "IMG_0500.jpg",
-      "IMG_0499.jpg",
-      "IMG_0498.JPG",
-      "IMG_0497.jpg",
-      "IMG_0496.JPG",
-      "IMG_0495.JPG",
-      "IMG_0144.png"
-    ];
-    const EMOTE_CAPTIONS = [
-      "serious side-eye",
-      "unimpressed king",
-      "hands on head!!",
-      "uhh… hi?",
-      "half-asleep vibes",
-      "skeptical stare",
-      "angy bonk mark",
-      "moody night walk",
-      "victory dance!"
-    ];
-    const emoteBtn = document.getElementById("emoteBtn");
-    const emoteImg = document.getElementById("emoteImg");
-    const emoteCaption = document.getElementById("emoteCaption");
-    let lastEmote = -1;
-    function showEmote(){
-      if(!EMOTE_SOURCES.length) return;
-      let i; do { i = Math.floor(Math.random()*EMOTE_SOURCES.length); } while(i===lastEmote && EMOTE_SOURCES.length>1);
-      lastEmote = i;
-      emoteImg.src = EMOTE_SOURCES[i];
-      emoteImg.style.display = "block";
-      emoteImg.classList.remove("flip","glitch"); void emoteImg.offsetWidth;
-      emoteImg.classList.add("flip","glitch");
-      emoteCaption.textContent = EMOTE_CAPTIONS[i] || "";
-      confetti(40);
-    }
-    emoteBtn.addEventListener("click", showEmote);
-    emoteImg.addEventListener("click", showEmote);
+    exportJSON.addEventListener('click',()=>{
+      const blob=new Blob([JSON.stringify(trip,null,2)],{type:'application/json'});
+      exportJSON.href=URL.createObjectURL(blob);
+    });
 
     /* ===== Confetti ===== */
     const cvs=document.getElementById('confetti'); const ctx=cvs.getContext('2d'); let pf=[];
     function size(){ cvs.width=innerWidth; cvs.height=innerHeight } window.addEventListener('resize',size); size();
-    function confetti(N=100){ const colors=['#4aa3ff','#86d7ff','#ffbf7f','#f5e9d2','#ffffff']; for(let i=0;i<N;i++){ pf.push({x:innerWidth/2,y:80,vx:(Math.random()*2-1)*4,vy:-(2+Math.random()*3),g:.06+Math.random()*.04,s:2+Math.random()*3,c:colors[(Math.random()*colors.length)|0],t:100+Math.random()*80}) } }
-    (function tick(){ ctx.clearRect(0,0,cvs.width,cvs.height); pf.forEach(p=>{ p.t--; p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; ctx.fillStyle=p.c; ctx.fillRect(p.x,p.y,p.s,p.s) }); pf=pf.filter(p=>p.t>0&&p.y<cvs.height+16); requestAnimationFrame(tick) })();
+    function confetti(N=100){
+      const colors=['#4aa3ff','#86d7ff','#ffbf7f','#f5e9d2','#ffffff'];
+      for(let i=0;i<N;i++){
+        pf.push({x:innerWidth/2,y:80,vx:(Math.random()*2-1)*4,vy:-(2+Math.random()*3),g:.06+Math.random()*.04,s:2+Math.random()*3,c:colors[(Math.random()*colors.length)|0],t:100+Math.random()*80});
+      }
+    }
+    (function tick(){
+      ctx.clearRect(0,0,cvs.width,cvs.height);
+      pf.forEach(p=>{ p.t--; p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; ctx.fillStyle=p.c; ctx.fillRect(p.x,p.y,p.s,p.s) });
+      pf=pf.filter(p=>p.t>0&&p.y<cvs.height+16);
+      requestAnimationFrame(tick);
+    })();
 
     /* ===== Self-tests ===== */
     (function selfTests(){
       try{
         console.assert(document.getElementById('bd-count'), '#bd-count exists');
-        console.assert(document.getElementById('nailongWidget'), 'Nailong widget present');
+        console.assert(typeof exportJSON.href !== 'undefined', 'export link present');
       }catch(e){ console.error('[self-tests] failed', e); }
     })();
   </script>
